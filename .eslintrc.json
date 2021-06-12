@@ -15,7 +15,7 @@
   ],
   "parserOptions": {
     "sourceType": "module",
-    "project": "./tsconfig.json"
+    "project": "./web/tsconfig.json"
   },
   "rules": {
     "no-console": ["warn", { "allow": ["warn", "info", "error"] }],
