@@ -10,7 +10,7 @@ export const Layout: VFC<Props> = ({ children }) => {
   return (
     <div className="min-h-screen">
       <Header />
-      <div>{children}</div>
+      <div className="p-5">{children}</div>
     </div>
   );
 };
