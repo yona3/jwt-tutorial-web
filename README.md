@@ -1,4 +1,4 @@
-This is my Next.js + TypeScript + Tailwind CSS starter template.
+This is a jwt-tutorial web.
 
 ## Tech stack
 
