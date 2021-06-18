@@ -59,11 +59,27 @@ const Index: NextPage = () => {
     }
   };
 
-  const handleLogout = () => {
-    dispatch({ type: UPDATE_ACCESS_TOKEN, accessToken: "" });
-    setAccessToken("");
-    setUser(null);
-    setError("logged out.");
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/user/logout", {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+        headers: { authorization: `bearer ${state.accessToken}` },
+      });
+
+      const data = await res.json();
+
+      if (!data.ok) throw new Error(data.error);
+
+      dispatch({ type: UPDATE_ACCESS_TOKEN, accessToken: "" });
+      setAccessToken("");
+      setUser(null);
+      setError("logged out.");
+    } catch (err) {
+      console.error(err);
+      setError(`error: ${err.message}`);
+    }
   };
 
   useEffect(() => {
@@ -71,7 +87,7 @@ const Index: NextPage = () => {
   }, []);
 
   useEffect(() => {
-    if (accessToken !== "" && !user) handleFetchUser();
+    if ((state.accessToken !== "" || accessToken !== "") && !user) handleFetchUser();
   }, [accessToken]);
 
   return (
