@@ -13,53 +13,51 @@ const Index: NextPage = () => {
   const [accessToken, setAccessToken] = useState("");
   const [error, setError] = useState<string>(null);
 
-  useEffect(() => {
-    if (state.accessToken) return;
+  const handleRefreshToken = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/refresh_token", {
+        method: "POST",
+        mode: "cors",
+        credentials: "include",
+      });
 
-    fetch("http://localhost:8080/refresh_token", {
-      method: "POST",
-      mode: "cors",
-      credentials: "include",
-    }).then(async (res) => {
-      try {
-        const data = await res.json();
+      const data = await res.json();
 
-        if (!data.ok) throw new Error("failed refresh token.");
-        console.log("data: ", data);
+      if (!data.ok) throw new Error("failed refresh token.");
+      console.log("handleRefreshToken");
+      console.log("data: ", data);
 
-        setAccessToken(data.accessToken);
-        dispatch({ type: UPDATE_ACCESS_TOKEN, accessToken: data.accessToken });
-        if (error) setError(null);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      }
-    });
-  }, []);
+      setAccessToken(data.accessToken);
+      dispatch({ type: UPDATE_ACCESS_TOKEN, accessToken: data.accessToken });
+      if (error) setError(null);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  };
 
-  useEffect(() => {
-    if (accessToken && state.accessToken && user) return;
+  const handleFetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/user/login", {
+        method: "GET",
+        mode: "cors",
+        credentials: "include",
+        headers: { authorization: `bearer ${state.accessToken}` },
+      });
 
-    fetch("http://localhost:8080/user/login", {
-      method: "GET",
-      mode: "cors",
-      credentials: "include",
-      headers: { authorization: `bearer ${state.accessToken}` },
-    }).then(async (res) => {
-      try {
-        const data = await res.json();
+      const data = await res.json();
 
-        if (data.error) throw new Error(data.error);
+      if (data.error) throw new Error(data.error);
 
-        setUser(data.user);
-        setAccessToken(state.accessToken);
-        if (error) setError(null);
-      } catch (err) {
-        console.error("error: ", err);
-        setError(`error: ${err.message}`);
-      }
-    });
-  }, [accessToken, state.accessToken]);
+      setUser(data.user);
+      setAccessToken(state.accessToken);
+      if (error) setError(null);
+    } catch (err) {
+      console.log("handleFetchUser");
+      console.error("error: ", err);
+      setError(`error: ${err.message}`);
+    }
+  };
 
   const handleLogout = () => {
     dispatch({ type: UPDATE_ACCESS_TOKEN, accessToken: "" });
@@ -67,6 +65,14 @@ const Index: NextPage = () => {
     setUser(null);
     setError("logged out.");
   };
+
+  useEffect(() => {
+    if (!state.accessToken) handleRefreshToken();
+  }, []);
+
+  useEffect(() => {
+    if (accessToken !== "" && !user) handleFetchUser();
+  }, [accessToken]);
 
   return (
     <Layout>
